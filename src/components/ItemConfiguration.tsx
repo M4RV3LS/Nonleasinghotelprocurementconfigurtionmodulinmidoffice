@@ -109,15 +109,30 @@ export function ItemConfiguration() {
     setView('edit');
   };
 
-  const handleSaveItem = (item: Omit<Item, 'id' | 'createdAt'>) => {
+  const generateItemCode = (): string => {
+    const prefix = 'ITM';
+    const existingCodes = items.map(item => item.code);
+    let counter = 1;
+    
+    while (true) {
+      const code = `${prefix}${counter.toString().padStart(3, '0')}`;
+      if (!existingCodes.includes(code)) {
+        return code;
+      }
+      counter++;
+    }
+  };
+
+  const handleSaveItem = (item: Omit<Item, 'id' | 'createdAt' | 'code'>) => {
     if (selectedItem) {
-      // Update existing item
-      setItems(items.map((i) => (i.id === selectedItem.id ? { ...item, id: selectedItem.id, createdAt: selectedItem.createdAt } : i)));
+      // Update existing item - keep existing code
+      setItems(items.map((i) => (i.id === selectedItem.id ? { ...item, code: selectedItem.code, id: selectedItem.id, createdAt: selectedItem.createdAt } : i)));
       showToast('Item updated successfully', 'success');
     } else {
-      // Create new item
+      // Create new item - generate code automatically
       const newItem: Item = {
         ...item,
+        code: generateItemCode(),
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
       };

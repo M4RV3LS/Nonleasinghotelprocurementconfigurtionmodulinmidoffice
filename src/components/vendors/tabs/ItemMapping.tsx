@@ -5,15 +5,7 @@ import { Modal } from '../../shared/Modal';
 import { FormField } from '../../shared/FormField';
 import { ConfirmDialog } from '../../shared/ConfirmDialog';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-
-// Mock items - in a real app, these would come from ItemConfiguration
-const AVAILABLE_ITEMS = [
-  { id: '1', code: 'ITM001', name: 'Premium Cotton T-Shirt', photo: 'https://images.unsplash.com/photo-1713881587420-113c1c43e28a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3R0b24lMjB0c2hpcnQlMjBwcm9kdWN0fGVufDF8fHx8MTc2NDI5ODg4M3ww&ixlib=rb-4.1.0&q=80&w=1080' },
-  { id: '2', code: 'ITM002', name: 'Wireless Mouse', photo: 'https://images.unsplash.com/photo-1670013190339-dfdab1ce99d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aXJlbGVzcyUyMGNvbXB1dGVyJTIwbW91c2V8ZW58MXx8fHwxNzY0MjIyMTQ3fDA&ixlib=rb-4.1.0&q=80&w=1080' },
-  { id: '3', code: 'ITM003', name: 'Office Chair', photo: 'https://images.unsplash.com/photo-1688578735427-994ecdea3ea4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvZmZpY2UlMjBjaGFpcnxlbnwxfHx8fDE3NjQyODU5MDN8MA&ixlib=rb-4.1.0&q=80&w=1080' },
-  { id: '4', code: 'ITM004', name: 'Laptop Stand', photo: 'https://images.unsplash.com/flagged/photo-1576697010739-6373b63f3204?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsYXB0b3AlMjBzdGFuZCUyMGRlc2t8ZW58MXx8fHwxNzY0MjYwMTAzfDA&ixlib=rb-4.1.0&q=80&w=1080' },
-  { id: '5', code: 'ITM005', name: 'Coffee Mug Set', photo: 'https://images.unsplash.com/photo-1666713711218-8ea7743c8ed1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBtdWclMjBzZXR8ZW58MXx8fHwxNzY0Mjk4ODg1fDA&ixlib=rb-4.1.0&q=80&w=1080' },
-];
+import { AVAILABLE_ITEMS } from '../../../mock-data';
 
 interface ItemMappingProps {
   mappings: ItemMappingType[];
@@ -30,6 +22,7 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
     agreementNumber: '',
     minQuantity: 1,
     multipleOf: 1,
+    description: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -50,6 +43,7 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
       agreementNumber: '',
       minQuantity: 1,
       multipleOf: 1,
+      description: '',
     });
     setErrors({});
     setShowModal(true);
@@ -63,6 +57,7 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
       agreementNumber: mapping.agreementNumber,
       minQuantity: mapping.minQuantity,
       multipleOf: mapping.multipleOf,
+      description: mapping.description || '',
     });
     setErrors({});
     setShowModal(true);
@@ -268,6 +263,15 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
                     </option>
                   ))}
               </select>
+            </FormField>
+
+            <FormField label="Description" helpText="Additional notes or specifications for this item (optional)">
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224] min-h-[80px]"
+                placeholder="Enter any special notes, specifications, or requirements..."
+              />
             </FormField>
           </div>
 

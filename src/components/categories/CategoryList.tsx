@@ -126,14 +126,7 @@ export function CategoryList({
                     className="px-6 py-4 cursor-pointer hover:underline"
                     onClick={() => onEditCategory(category)}
                   >
-                    <div className="flex items-center gap-2">
-                      {category.name}
-                      {category.isSystemDefault && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800">
-                          System Default
-                        </span>
-                      )}
-                    </div>
+                    {category.name}
                   </td>
                   <td className="px-6 py-4 text-gray-600">{category.description}</td>
                   <td className="px-6 py-4">

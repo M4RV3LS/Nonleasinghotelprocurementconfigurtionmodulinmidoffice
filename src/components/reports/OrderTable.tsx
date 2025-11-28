@@ -100,55 +100,60 @@ export function OrderTable({ orders }: OrderTableProps) {
         <div className="flex gap-4 flex-wrap">
           <div className="flex gap-2 items-center">
             <span className="text-gray-700">Status:</span>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={statusFilter.includes('requested')}
-                onChange={() => toggleStatusFilter('requested')}
-                className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224] rounded"
-              />
-              <span className="text-gray-600">Requested</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={statusFilter.includes('sent')}
-                onChange={() => toggleStatusFilter('sent')}
-                className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224] rounded"
-              />
-              <span className="text-gray-600">Sent</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={statusFilter.includes('cancelled')}
-                onChange={() => toggleStatusFilter('cancelled')}
-                className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224] rounded"
-              />
-              <span className="text-gray-600">Cancelled</span>
-            </label>
+            <button
+              onClick={() => toggleStatusFilter('requested')}
+              className={`px-3 py-1.5 rounded-lg border transition-colors ${
+                statusFilter.includes('requested')
+                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Requested
+            </button>
+            <button
+              onClick={() => toggleStatusFilter('sent')}
+              className={`px-3 py-1.5 rounded-lg border transition-colors ${
+                statusFilter.includes('sent')
+                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Sent
+            </button>
+            <button
+              onClick={() => toggleStatusFilter('cancelled')}
+              className={`px-3 py-1.5 rounded-lg border transition-colors ${
+                statusFilter.includes('cancelled')
+                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Cancelled
+            </button>
           </div>
 
           <div className="flex gap-2 items-center">
             <span className="text-gray-700">Channel:</span>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={channelFilter.includes('whatsapp')}
-                onChange={() => toggleChannelFilter('whatsapp')}
-                className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224] rounded"
-              />
-              <span className="text-gray-600">WhatsApp</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={channelFilter.includes('email')}
-                onChange={() => toggleChannelFilter('email')}
-                className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224] rounded"
-              />
-              <span className="text-gray-600">Email</span>
-            </label>
+            <button
+              onClick={() => toggleChannelFilter('whatsapp')}
+              className={`px-3 py-1.5 rounded-lg border transition-colors ${
+                channelFilter.includes('whatsapp')
+                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              WhatsApp
+            </button>
+            <button
+              onClick={() => toggleChannelFilter('email')}
+              className={`px-3 py-1.5 rounded-lg border transition-colors ${
+                channelFilter.includes('email')
+                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              Email
+            </button>
           </div>
         </div>
       </div>

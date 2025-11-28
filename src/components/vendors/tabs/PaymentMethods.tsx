@@ -1,12 +1,4 @@
-// Mock payment methods - in a real app, these would come from the PaymentMethodConfiguration
-const AVAILABLE_PAYMENT_METHODS = [
-  { id: '1', name: 'Term of Payment 30 Days' },
-  { id: '2', name: 'Term of Payment 60 Days' },
-  { id: '3', name: 'Cash on Delivery (COD)' },
-  { id: '4', name: 'Advance Payment' },
-  { id: '5', name: 'Bank Transfer' },
-  { id: '6', name: 'Credit Card' },
-];
+import { AVAILABLE_PAYMENT_METHODS } from '../../../mock-data';
 
 interface PaymentMethodsProps {
   selectedMethods: string[];

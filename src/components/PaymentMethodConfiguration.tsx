@@ -1,46 +1,13 @@
 import { useState } from 'react';
 import { PaymentMethodList } from './payment-methods/PaymentMethodList';
 import { Toast, ToastType } from './shared/Toast';
+import { MOCK_PAYMENT_METHODS, PaymentMethod } from '../mock-data';
 
-export interface PaymentMethod {
-  id: string;
-  name: string;
-  status: 'active' | 'inactive';
-  isSystemDefault: boolean;
-  createdAt: string;
-}
+// Re-export type for backward compatibility
+export type { PaymentMethod };
 
 export function PaymentMethodConfiguration() {
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      id: '1',
-      name: 'Term of Payment 30 Days',
-      status: 'active',
-      isSystemDefault: true,
-      createdAt: '2024-01-01',
-    },
-    {
-      id: '2',
-      name: 'Term of Payment 60 Days',
-      status: 'active',
-      isSystemDefault: true,
-      createdAt: '2024-01-01',
-    },
-    {
-      id: '3',
-      name: 'Cash on Delivery (COD)',
-      status: 'active',
-      isSystemDefault: true,
-      createdAt: '2024-01-01',
-    },
-    {
-      id: '4',
-      name: 'Advance Payment',
-      status: 'active',
-      isSystemDefault: true,
-      createdAt: '2024-01-01',
-    },
-  ]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(MOCK_PAYMENT_METHODS);
 
   const [toast, setToast] = useState<{
     isOpen: boolean;

@@ -149,14 +149,7 @@ export function PaymentMethodList({
             {filteredMethods.map((method) => (
               <tr key={method.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <span>{method.name}</span>
-                    {method.isSystemDefault && (
-                      <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
-                        System Default
-                      </span>
-                    )}
-                  </div>
+                  <span>{method.name}</span>
                 </td>
                 <td className="px-6 py-4">
                   <ToggleSwitch

@@ -38,6 +38,7 @@ export interface ItemMapping {
   agreementNumber?: string;
   minQuantity: number;
   multipleOf: number;
+  description?: string;
 }
 
 export function VendorManagement() {

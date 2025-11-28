@@ -8,14 +8,13 @@ import { Upload, X, Plus, Trash2, ChevronLeft } from 'lucide-react';
 
 interface ItemFormProps {
   item: Item | null;
-  onSave: (item: Omit<Item, 'id' | 'createdAt'>) => void;
+  onSave: (item: Omit<Item, 'id' | 'createdAt' | 'code'>) => void;
   onCancel: () => void;
   existingCodes: string[];
 }
 
 export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProps) {
-  const [formData, setFormData] = useState<Omit<Item, 'id' | 'createdAt'>>({
-    code: item?.code || '',
+  const [formData, setFormData] = useState<Omit<Item, 'id' | 'createdAt' | 'code'>>({
     name: item?.name || '',
     category: item?.category || '',
     uom: item?.uom || '',
@@ -35,19 +34,6 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
 
   const standardCategories = ['Apparel', 'Electronics', 'Food & Beverage', 'Office Supplies', 'Hardware'];
   const standardUoms = ['Piece', 'Box', 'Carton', 'Kilogram', 'Liter', 'Meter'];
-
-  const generateCode = () => {
-    const prefix = 'ITM';
-    let counter = 1;
-    let newCode = `${prefix}${String(counter).padStart(3, '0')}`;
-    
-    while (existingCodes.includes(newCode)) {
-      counter++;
-      newCode = `${prefix}${String(counter).padStart(3, '0')}`;
-    }
-    
-    updateField('code', newCode);
-  };
 
   const updateField = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
@@ -116,16 +102,6 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.code.trim()) {
-      newErrors.code = 'Item code is required';
-    } else if (formData.code.length > 20) {
-      newErrors.code = 'Item code must be 20 characters or less';
-    } else if (!/^[a-zA-Z0-9]+$/.test(formData.code)) {
-      newErrors.code = 'Item code must be alphanumeric';
-    } else if (existingCodes.includes(formData.code) && formData.code !== item?.code) {
-      newErrors.code = 'This item code already exists';
-    }
-
     if (!formData.name.trim()) {
       newErrors.name = 'Item name is required';
     } else if (formData.name.length > 100) {
@@ -151,7 +127,6 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
       if (saveAndAddAnother) {
         // Reset form
         setFormData({
-          code: '',
           name: '',
           category: '',
           uom: '',
@@ -194,22 +169,6 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
         {/* Section 1: Basic Information */}
         <div className="mb-8">
           <h3 className="text-gray-900 mb-4 pb-2 border-b border-gray-200">Basic Information</h3>
-
-          <FormField label="Item Code" required error={errors.code}>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formData.code}
-                onChange={(e) => updateField('code', e.target.value.toUpperCase())}
-                maxLength={20}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-                placeholder="e.g., ITM001"
-              />
-              <Button variant="secondary" onClick={generateCode}>
-                Generate Code
-              </Button>
-            </div>
-          </FormField>
 
           <FormField label="Item Name" required error={errors.name}>
             <input
