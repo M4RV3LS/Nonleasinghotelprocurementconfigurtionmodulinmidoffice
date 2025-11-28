@@ -11,18 +11,45 @@ interface BasicInformationProps {
   isEdit: boolean;
 }
 
-const ISLANDS = [
-  'Luzon',
-  'Visayas',
-  'Mindanao',
-  'Palawan',
-  'Panay',
-  'Negros',
-  'Cebu',
-  'Bohol',
-  'Leyte',
-  'Samar',
-  'Mindoro',
+const PROVINCES = [
+  'Nanggroe Aceh Darussalam (Banda Aceh)',
+  'Sumatera Utara (Medan)',
+  'Sumatera Selatan (Palembang)',
+  'Sumatera Barat (Padang)',
+  'Bengkulu (Bengkulu)',
+  'Riau (Pekanbaru)',
+  'Kepulauan Riau (Tanjung Pinang)',
+  'Jambi (Jambi)',
+  'Lampung (Bandar Lampung)',
+  'Bangka Belitung (Pangkal Pinang)',
+  'Kalimantan Barat (Pontianak)',
+  'Kalimantan Timur (Samarinda)',
+  'Kalimantan Selatan (Banjarbaru)',
+  'Kalimantan Tengah (Palangkaraya)',
+  'Kalimantan Utara (Tanjung Selor)',
+  'Banten (Serang)',
+  'DKI Jakarta (Jakarta)',
+  'Jawa Barat (Bandung)',
+  'Jawa Tengah (Semarang)',
+  'Daerah Istimewa Yogyakarta (Yogyakarta)',
+  'Jawa Timur (Surabaya)',
+  'Bali (Denpasar)',
+  'Nusa Tenggara Timur (Kupang)',
+  'Nusa Tenggara Barat (Mataram)',
+  'Gorontalo (Gorontalo)',
+  'Sulawesi Barat (Mamuju)',
+  'Sulawesi Tengah (Palu)',
+  'Sulawesi Utara (Manado)',
+  'Sulawesi Tenggara (Kendari)',
+  'Sulawesi Selatan (Makassar)',
+  'Maluku Utara (Sofifi)',
+  'Maluku (Ambon)',
+  'Papua Barat (Manokwari)',
+  'Papua (Jayapura)',
+  'Papua Tengah (Nabire)',
+  'Papua Pegunungan (Jayawijaya)',
+  'Papua Selatan (Merauke)',
+  'Papua Barat Daya (Sorong)',
 ];
 
 export function BasicInformation({ formData, updateFormData, existingCodes, isEdit }: BasicInformationProps) {
@@ -67,11 +94,11 @@ export function BasicInformation({ formData, updateFormData, existingCodes, isEd
     handleFieldChange('islands', newIslands);
   };
 
-  const selectAllIslands = () => {
-    handleFieldChange('islands', ISLANDS);
+  const selectAllProvinces = () => {
+    handleFieldChange('islands', PROVINCES);
   };
 
-  const clearAllIslands = () => {
+  const clearAllProvinces = () => {
     handleFieldChange('islands', []);
   };
 
@@ -104,29 +131,29 @@ export function BasicInformation({ formData, updateFormData, existingCodes, isEd
         />
       </FormField>
 
-      <FormField label="Island Coverage" required error={errors.islands}>
+      <FormField label="Province Coverage" required error={errors.islands}>
         <div className="space-y-2">
           <div className="flex gap-2 mb-3">
-            <Button variant="secondary" size="sm" onClick={selectAllIslands}>
+            <Button variant="secondary" size="sm" onClick={selectAllProvinces}>
               Select All
             </Button>
-            <Button variant="secondary" size="sm" onClick={clearAllIslands}>
+            <Button variant="secondary" size="sm" onClick={clearAllProvinces}>
               Clear All
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {ISLANDS.map((island) => (
+          <div className="border border-gray-300 rounded-lg max-h-96 overflow-y-auto">
+            {PROVINCES.map((province) => (
               <label
-                key={island}
-                className="flex items-center gap-2 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
+                key={province}
+                className="flex items-center gap-2 p-3 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50"
               >
                 <input
                   type="checkbox"
-                  checked={formData.islands.includes(island)}
-                  onChange={() => toggleIsland(island)}
+                  checked={formData.islands.includes(province)}
+                  onChange={() => toggleIsland(province)}
                   className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224] rounded"
                 />
-                <span>{island}</span>
+                <span>{province}</span>
               </label>
             ))}
           </div>
@@ -189,21 +216,45 @@ export function BasicInformation({ formData, updateFormData, existingCodes, isEd
         </FormField>
       </div>
 
-      <FormField label="Commission %" required error={errors.commission}>
-        <div className="relative">
-          <input
-            type="number"
-            value={formData.commission}
-            onChange={(e) => handleFieldChange('commission', Math.min(100, Math.max(0, Number(e.target.value))))}
-            min={0}
-            max={100}
-            step={0.1}
-            className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-            placeholder="0.0"
-          />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">%</span>
-        </div>
-      </FormField>
+      <div className="border-t border-gray-200 pt-6">
+        <h4 className="text-gray-900 mb-4">Commission Information</h4>
+
+        <FormField label="Commission %" required error={errors.commission}>
+          <div className="relative">
+            <input
+              type="number"
+              value={formData.commission}
+              onChange={(e) => handleFieldChange('commission', Math.min(100, Math.max(0, Number(e.target.value))))}
+              min={0}
+              max={100}
+              step={0.1}
+              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+              placeholder="0.0"
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+          </div>
+        </FormField>
+
+        <FormField label="Linked Agreement" helpText="Link this commission to a specific agreement (optional)">
+          <select
+            value={formData.commissionAgreement || ''}
+            onChange={(e) => handleFieldChange('commissionAgreement', e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+          >
+            <option value="">No agreement</option>
+            {formData.agreements
+              .filter((a) => {
+                const endDate = new Date(a.endDate);
+                return endDate >= new Date();
+              })
+              .map((agreement) => (
+                <option key={agreement.id} value={agreement.contractNumber}>
+                  {agreement.contractNumber}
+                </option>
+              ))}
+          </select>
+        </FormField>
+      </div>
 
       <FormField label="Status" required>
         <ToggleSwitch

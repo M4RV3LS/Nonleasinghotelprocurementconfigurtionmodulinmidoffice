@@ -8,11 +8,11 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 
 // Mock items - in a real app, these would come from ItemConfiguration
 const AVAILABLE_ITEMS = [
-  { id: '1', code: 'ITM001', name: 'Premium Cotton T-Shirt', photo: '' },
-  { id: '2', code: 'ITM002', name: 'Wireless Mouse', photo: '' },
-  { id: '3', code: 'ITM003', name: 'Office Chair', photo: '' },
-  { id: '4', code: 'ITM004', name: 'Laptop Stand', photo: '' },
-  { id: '5', code: 'ITM005', name: 'Coffee Mug Set', photo: '' },
+  { id: '1', code: 'ITM001', name: 'Premium Cotton T-Shirt', photo: 'https://images.unsplash.com/photo-1713881587420-113c1c43e28a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3R0b24lMjB0c2hpcnQlMjBwcm9kdWN0fGVufDF8fHx8MTc2NDI5ODg4M3ww&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: '2', code: 'ITM002', name: 'Wireless Mouse', photo: 'https://images.unsplash.com/photo-1670013190339-dfdab1ce99d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aXJlbGVzcyUyMGNvbXB1dGVyJTIwbW91c2V8ZW58MXx8fHwxNzY0MjIyMTQ3fDA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: '3', code: 'ITM003', name: 'Office Chair', photo: 'https://images.unsplash.com/photo-1688578735427-994ecdea3ea4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxvZmZpY2UlMjBjaGFpcnxlbnwxfHx8fDE3NjQyODU5MDN8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: '4', code: 'ITM004', name: 'Laptop Stand', photo: 'https://images.unsplash.com/flagged/photo-1576697010739-6373b63f3204?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsYXB0b3AlMjBzdGFuZCUyMGRlc2t8ZW58MXx8fHwxNzY0MjYwMTAzfDA&ixlib=rb-4.1.0&q=80&w=1080' },
+  { id: '5', code: 'ITM005', name: 'Coffee Mug Set', photo: 'https://images.unsplash.com/photo-1666713711218-8ea7743c8ed1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBtdWclMjBzZXR8ZW58MXx8fHwxNzY0Mjk4ODg1fDA&ixlib=rb-4.1.0&q=80&w=1080' },
 ];
 
 interface ItemMappingProps {
@@ -26,7 +26,6 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
   const [editingMapping, setEditingMapping] = useState<ItemMappingType | null>(null);
   const [formData, setFormData] = useState<Omit<ItemMappingType, 'id'>>({
     itemId: '',
-    pricingType: 'fixed',
     unitPrice: 0,
     agreementNumber: '',
     minQuantity: 1,
@@ -47,7 +46,6 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
     setEditingMapping(null);
     setFormData({
       itemId: '',
-      pricingType: 'fixed',
       unitPrice: 0,
       agreementNumber: '',
       minQuantity: 1,
@@ -61,7 +59,6 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
     setEditingMapping(mapping);
     setFormData({
       itemId: mapping.itemId,
-      pricingType: mapping.pricingType,
       unitPrice: mapping.unitPrice,
       agreementNumber: mapping.agreementNumber,
       minQuantity: mapping.minQuantity,
@@ -78,10 +75,8 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
       newErrors.itemId = 'Please select an item';
     }
 
-    if (formData.pricingType === 'fixed') {
-      if (!formData.unitPrice || formData.unitPrice <= 0) {
-        newErrors.unitPrice = 'Unit price must be greater than 0 for fixed pricing';
-      }
+    if (!formData.unitPrice || formData.unitPrice <= 0) {
+      newErrors.unitPrice = 'Unit price must be greater than 0';
     }
 
     if (!formData.minQuantity || formData.minQuantity < 1) {
@@ -103,21 +98,15 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
   const handleSave = () => {
     if (!validate()) return;
 
-    const mappingData = {
-      ...formData,
-      unitPrice: formData.pricingType === 'fixed' ? formData.unitPrice : undefined,
-      agreementNumber: formData.pricingType === 'fixed' ? formData.agreementNumber : undefined,
-    };
-
     if (editingMapping) {
       onChange(
         mappings.map((m) =>
-          m.id === editingMapping.id ? { ...mappingData, id: editingMapping.id } : m
+          m.id === editingMapping.id ? { ...formData, id: editingMapping.id } : m
         )
       );
     } else {
       const newMapping: ItemMappingType = {
-        ...mappingData,
+        ...formData,
         id: Date.now().toString(),
       };
       onChange([...mappings, newMapping]);
@@ -159,8 +148,7 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
                   <th className="px-4 py-3 text-left text-gray-700">Photo</th>
                   <th className="px-4 py-3 text-left text-gray-700">Item Code</th>
                   <th className="px-4 py-3 text-left text-gray-700">Item Name</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Pricing Type</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Unit Price</th>
+                  <th className="px-4 py-3 text-left text-gray-700">Unit Price (IDR)</th>
                   <th className="px-4 py-3 text-left text-gray-700">Agreement</th>
                   <th className="px-4 py-3 text-left text-gray-700">Min Qty</th>
                   <th className="px-4 py-3 text-left text-gray-700">Multiple Of</th>
@@ -185,21 +173,8 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
                       </td>
                       <td className="px-4 py-3 text-gray-600">{item.code}</td>
                       <td className="px-4 py-3">{item.name}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full ${
-                            mapping.pricingType === 'fixed'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {mapping.pricingType === 'fixed' ? 'Fixed Price' : 'Not Fixed'}
-                        </span>
-                      </td>
                       <td className="px-4 py-3 text-gray-600">
-                        {mapping.pricingType === 'fixed' && mapping.unitPrice
-                          ? `₱${mapping.unitPrice.toFixed(2)}`
-                          : '-'}
+                        Rp {mapping.unitPrice.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3 text-gray-600">{mapping.agreementNumber || '-'}</td>
                       <td className="px-4 py-3 text-gray-600">{mapping.minQuantity}</td>
@@ -260,78 +235,40 @@ export function ItemMapping({ mappings, agreements, onChange }: ItemMappingProps
           <div className="border-t border-gray-200 pt-6">
             <h4 className="text-gray-900 mb-4">Pricing Configuration</h4>
 
-            <FormField label="Pricing Type" required>
-              <div className="space-y-2">
-                <label className="flex items-start gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="pricingType"
-                    value="fixed"
-                    checked={formData.pricingType === 'fixed'}
-                    onChange={(e) => setFormData({ ...formData, pricingType: 'fixed' })}
-                    className="mt-1 w-4 h-4 text-[#ec2224] focus:ring-[#ec2224]"
-                  />
-                  <div>
-                    <p>Fixed Price</p>
-                    <p className="text-gray-600">Price is pre-determined</p>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="pricingType"
-                    value="not-fixed"
-                    checked={formData.pricingType === 'not-fixed'}
-                    onChange={(e) => setFormData({ ...formData, pricingType: 'not-fixed' })}
-                    className="mt-1 w-4 h-4 text-[#ec2224] focus:ring-[#ec2224]"
-                  />
-                  <div>
-                    <p>Not Fixed</p>
-                    <p className="text-gray-600">Price determined at order time</p>
-                  </div>
-                </label>
+            <FormField label="Unit Price (IDR)" required error={errors.unitPrice}>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                <input
+                  type="number"
+                  value={formData.unitPrice || ''}
+                  onChange={(e) => setFormData({ ...formData, unitPrice: Number(e.target.value) })}
+                  min={0}
+                  step={0.01}
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+                  placeholder="0.00"
+                />
               </div>
             </FormField>
 
-            {formData.pricingType === 'fixed' && (
-              <>
-                <FormField label="Unit Price" required error={errors.unitPrice}>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                    <input
-                      type="number"
-                      value={formData.unitPrice || ''}
-                      onChange={(e) => setFormData({ ...formData, unitPrice: Number(e.target.value) })}
-                      min={0}
-                      step={0.01}
-                      className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-                      placeholder="0.00"
-                    />
-                  </div>
-                </FormField>
-
-                <FormField label="Agreement Number" helpText="Link this pricing to a specific agreement (optional)">
-                  <select
-                    value={formData.agreementNumber}
-                    onChange={(e) => setFormData({ ...formData, agreementNumber: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-                  >
-                    <option value="">No agreement</option>
-                    {agreements
-                      .filter((a) => {
-                        const endDate = new Date(a.endDate);
-                        return endDate >= new Date();
-                      })
-                      .map((agreement) => (
-                        <option key={agreement.id} value={agreement.contractNumber}>
-                          {agreement.contractNumber}
-                        </option>
-                      ))}
-                  </select>
-                </FormField>
-              </>
-            )}
+            <FormField label="Agreement Number" helpText="Link this pricing to a specific agreement (optional)">
+              <select
+                value={formData.agreementNumber}
+                onChange={(e) => setFormData({ ...formData, agreementNumber: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+              >
+                <option value="">No agreement</option>
+                {agreements
+                  .filter((a) => {
+                    const endDate = new Date(a.endDate);
+                    return endDate >= new Date();
+                  })
+                  .map((agreement) => (
+                    <option key={agreement.id} value={agreement.contractNumber}>
+                      {agreement.contractNumber}
+                    </option>
+                  ))}
+              </select>
+            </FormField>
           </div>
 
           {/* Section 3: Order Constraints */}

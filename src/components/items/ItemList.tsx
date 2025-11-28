@@ -4,7 +4,8 @@ import { Button } from '../shared/Button';
 import { StatusBadge } from '../shared/StatusBadge';
 import { ConfirmDialog } from '../shared/ConfirmDialog';
 import { ToggleSwitch } from '../shared/ToggleSwitch';
-import { Search, Filter, Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ImageLightbox } from '../shared/ImageLightbox';
+import { Search, Filter, Plus, Edit, Trash2, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 
 interface ItemListProps {
   items: Item[];
@@ -29,6 +30,12 @@ export function ItemList({ items, onCreateItem, onEditItem, onDeleteItem, onTogg
     isOpen: false,
     itemId: '',
     currentStatus: '',
+  });
+  const [lightbox, setLightbox] = useState<{ isOpen: boolean; imageUrl: string; title: string; subtitle: string }>({
+    isOpen: false,
+    imageUrl: '',
+    title: '',
+    subtitle: '',
   });
 
   // Get unique categories
@@ -128,13 +135,19 @@ export function ItemList({ items, onCreateItem, onEditItem, onDeleteItem, onTogg
                 {paginatedItems.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                        {item.photo ? (
-                          <img src={item.photo} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-gray-400">No image</span>
-                        )}
-                      </div>
+                      <button
+                        onClick={() => item.photo && setLightbox({
+                          isOpen: true,
+                          imageUrl: item.photo,
+                          title: `${item.code} - ${item.name}`,
+                          subtitle: 'Primary Photo'
+                        })}
+                        className={`p-2 rounded-lg ${item.photo ? 'hover:bg-gray-100 text-blue-600' : 'text-gray-400 cursor-not-allowed'}`}
+                        disabled={!item.photo}
+                        title={item.photo ? 'View photo' : 'No photo available'}
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
                     </td>
                     <td
                       className="px-6 py-4 text-[#ec2224] cursor-pointer hover:underline"
@@ -260,6 +273,15 @@ export function ItemList({ items, onCreateItem, onEditItem, onDeleteItem, onTogg
           statusConfirm.currentStatus === 'active' ? 'Note: Inactive items cannot be selected in RedPartners module.' : ''
         }`}
         confirmText="Change Status"
+      />
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        isOpen={lightbox.isOpen}
+        onClose={() => setLightbox({ isOpen: false, imageUrl: '', title: '', subtitle: '' })}
+        imageUrl={lightbox.imageUrl}
+        title={lightbox.title}
+        subtitle={lightbox.subtitle}
       />
     </div>
   );

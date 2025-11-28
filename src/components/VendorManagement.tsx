@@ -15,6 +15,7 @@ export interface Vendor {
   email: string;
   alternativePhone?: string;
   commission: number;
+  commissionAgreement?: string; // Agreement number linked to commission
   status: 'active' | 'inactive';
   paymentMethods: string[]; // IDs of payment methods
   agreements: Agreement[];
@@ -33,8 +34,7 @@ export interface Agreement {
 export interface ItemMapping {
   id: string;
   itemId: string;
-  pricingType: 'fixed' | 'not-fixed';
-  unitPrice?: number;
+  unitPrice: number;
   agreementNumber?: string;
   minQuantity: number;
   multipleOf: number;
@@ -55,6 +55,7 @@ export function VendorManagement() {
       phone: '+63 912 345 6789',
       email: 'juan@pacificsupplies.com',
       commission: 15,
+      commissionAgreement: 'CTR-2024-001',
       status: 'active',
       paymentMethods: ['1', '2'],
       agreements: [

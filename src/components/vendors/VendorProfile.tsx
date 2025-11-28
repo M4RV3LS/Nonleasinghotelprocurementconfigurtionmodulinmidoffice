@@ -16,7 +16,7 @@ interface VendorProfileProps {
 }
 
 export function VendorProfile({ vendor, onSave, onCancel, existingCodes }: VendorProfileProps) {
-  const [activeTab, setActiveTab] = useState<'basic' | 'payments' | 'agreements' | 'items'>('basic');
+  const [activeTab, setActiveTab] = useState<'agreements' | 'basic' | 'payments' | 'items'>('agreements');
   const [formData, setFormData] = useState<Omit<Vendor, 'id' | 'createdAt'>>({
     code: vendor?.code || '',
     name: vendor?.name || '',
@@ -27,6 +27,7 @@ export function VendorProfile({ vendor, onSave, onCancel, existingCodes }: Vendo
     email: vendor?.email || '',
     alternativePhone: vendor?.alternativePhone || '',
     commission: vendor?.commission || 0,
+    commissionAgreement: vendor?.commissionAgreement || '',
     status: vendor?.status || 'active',
     paymentMethods: vendor?.paymentMethods || [],
     agreements: vendor?.agreements || [],
@@ -54,9 +55,9 @@ export function VendorProfile({ vendor, onSave, onCancel, existingCodes }: Vendo
   };
 
   const tabs = [
+    { id: 'agreements' as const, label: 'Agreements/Offerings' },
     { id: 'basic' as const, label: 'Basic Information' },
     { id: 'payments' as const, label: 'Payment Methods' },
-    { id: 'agreements' as const, label: 'Agreements/Offerings' },
     { id: 'items' as const, label: 'Item Mapping' },
   ];
 
@@ -104,6 +105,13 @@ export function VendorProfile({ vendor, onSave, onCancel, existingCodes }: Vendo
 
         {/* Tab Content */}
         <div className="p-6">
+          {activeTab === 'agreements' && (
+            <Agreements
+              agreements={formData.agreements}
+              onChange={(agreements) => updateFormData({ agreements })}
+            />
+          )}
+
           {activeTab === 'basic' && (
             <BasicInformation
               formData={formData}
@@ -117,13 +125,6 @@ export function VendorProfile({ vendor, onSave, onCancel, existingCodes }: Vendo
             <PaymentMethods
               selectedMethods={formData.paymentMethods}
               onChange={(methods) => updateFormData({ paymentMethods: methods })}
-            />
-          )}
-
-          {activeTab === 'agreements' && (
-            <Agreements
-              agreements={formData.agreements}
-              onChange={(agreements) => updateFormData({ agreements })}
             />
           )}
 
