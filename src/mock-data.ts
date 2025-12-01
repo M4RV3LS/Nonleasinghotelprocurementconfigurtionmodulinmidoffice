@@ -4,6 +4,8 @@
 export interface ItemCategory {
   id: string;
   code: string;
+  brandName: string;
+  itemCategory: 'Branding Item' | 'Ops Item' | 'Others';
   name: string;
   description: string;
   status: 'active' | 'inactive';
@@ -16,6 +18,8 @@ export const MOCK_CATEGORIES: ItemCategory[] = [
   {
     id: '1',
     code: 'LINEN',
+    brandName: 'Reddoorz',
+    itemCategory: 'Ops Item',
     name: 'Linen',
     description: 'Bed linen, towels, and textile products',
     status: 'active',
@@ -26,6 +30,8 @@ export const MOCK_CATEGORIES: ItemCategory[] = [
   {
     id: '2',
     code: 'LAUNDRY',
+    brandName: 'Sans',
+    itemCategory: 'Ops Item',
     name: 'Laundry',
     description: 'Laundry services and supplies',
     status: 'active',
@@ -36,6 +42,8 @@ export const MOCK_CATEGORIES: ItemCategory[] = [
   {
     id: '3',
     code: 'BEVERAGE',
+    brandName: 'Reddoorz Premium',
+    itemCategory: 'Branding Item',
     name: 'Beverage',
     description: 'Bottled water and beverages',
     status: 'active',
@@ -46,6 +54,8 @@ export const MOCK_CATEGORIES: ItemCategory[] = [
   {
     id: '4',
     code: 'TECHNICAL',
+    brandName: 'No Branding',
+    itemCategory: 'Ops Item',
     name: 'Technical Services',
     description: 'Air conditioning and handyman services',
     status: 'active',
@@ -56,6 +66,8 @@ export const MOCK_CATEGORIES: ItemCategory[] = [
   {
     id: '5',
     code: 'VENDING',
+    brandName: 'The Lavana',
+    itemCategory: 'Others',
     name: 'Vending Machine',
     description: 'Vending machine products and services',
     status: 'active',

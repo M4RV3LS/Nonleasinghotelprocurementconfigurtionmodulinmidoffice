@@ -1,120 +1,189 @@
-import { useState, useRef } from 'react';
-import { Item } from '../ItemConfiguration';
-import { Button } from '../shared/Button';
-import { FormField } from '../shared/FormField';
-import { ToggleSwitch } from '../shared/ToggleSwitch';
-import { ConfirmDialog } from '../shared/ConfirmDialog';
-import { Upload, X, Plus, Trash2, ChevronLeft } from 'lucide-react';
+import { useState, useRef } from "react";
+import { Item } from "../ItemConfiguration";
+import { ItemCategory } from "../mock-data"; // Import ItemCategory type
+import { Button } from "../shared/Button";
+import { FormField } from "../shared/FormField";
+import { ToggleSwitch } from "../shared/ToggleSwitch";
+import { ConfirmDialog } from "../shared/ConfirmDialog";
+import {
+  Upload,
+  X,
+  ChevronLeft,
+} from "lucide-react";
 
 interface ItemFormProps {
   item: Item | null;
-  onSave: (item: Omit<Item, 'id' | 'createdAt' | 'code'>) => void;
+  categories: ItemCategory[]; // New prop
+  onSave: (
+    item: Omit<Item, "id" | "createdAt" | "code">,
+  ) => void;
   onCancel: () => void;
   existingCodes: string[];
 }
 
-export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProps) {
-  const [formData, setFormData] = useState<Omit<Item, 'id' | 'createdAt' | 'code'>>({
-    name: item?.name || '',
-    category: item?.category || '',
-    uom: item?.uom || '',
-    photo: item?.photo || '',
+export function ItemForm({
+  item,
+  categories,
+  onSave,
+  onCancel,
+  existingCodes,
+}: ItemFormProps) {
+  const [formData, setFormData] = useState<
+    Omit<Item, "id" | "createdAt" | "code">
+  >({
+    name: item?.name || "",
+    category: item?.category || "",
+    uom: item?.uom || "",
+    photo: item?.photo || "",
     specifications: item?.specifications || [],
-    status: item?.status || 'active',
+    status: item?.status || "active",
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [newCategory, setNewCategory] = useState('');
-  const [showNewCategory, setShowNewCategory] = useState(false);
-  const [customUom, setCustomUom] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>(
+    {},
+  );
+  const [customUom, setCustomUom] = useState("");
   const [showCustomUom, setShowCustomUom] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showCancelConfirm, setShowCancelConfirm] =
+    useState(false);
 
-  const standardCategories = ['Apparel', 'Electronics', 'Food & Beverage', 'Office Supplies', 'Hardware'];
-  const standardUoms = ['Piece', 'Box', 'Carton', 'Kilogram', 'Liter', 'Meter'];
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Ref for variant photo uploads
+  const variantFileRefs = useRef<Map<string, HTMLInputElement>>(
+    new Map(),
+  );
+
+  const standardUoms = [
+    "Piece",
+    "Box",
+    "Carton",
+    "Kilogram",
+    "Liter",
+    "Meter",
+  ];
 
   const updateField = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
     setHasChanges(true);
-    // Clear error for this field
     if (errors[field]) {
-      setErrors({ ...errors, [field]: '' });
+      setErrors({ ...errors, [field]: "" });
     }
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
-        setErrors({ ...errors, photo: 'File size must be less than 5MB' });
+        setErrors({
+          ...errors,
+          photo: "File size must be less than 5MB",
+        });
         return;
       }
-      
-      // Check file type
       if (!file.type.match(/^image\/(jpeg|png)$/)) {
-        setErrors({ ...errors, photo: 'Only JPG and PNG files are allowed' });
+        setErrors({
+          ...errors,
+          photo: "Only JPG and PNG files are allowed",
+        });
         return;
       }
-      
-      // Create data URL
       const reader = new FileReader();
       reader.onload = (event) => {
-        updateField('photo', event.target?.result as string);
+        updateField("photo", event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVariantPhotoUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    specIndex: number,
+    valueIndex: number,
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        // Smaller limit for variants
+        alert("Variant photo must be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const newSpecs = [...formData.specifications];
+        newSpecs[specIndex].values[valueIndex].photo = event
+          .target?.result as string;
+        updateField("specifications", newSpecs);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const addSpecification = () => {
-    updateField('specifications', [...formData.specifications, { key: '', values: [] }]);
+    // Constraint: Limit to 1 variant only
+    if (formData.specifications.length >= 1) return;
+
+    updateField("specifications", [
+      ...formData.specifications,
+      { key: "", values: [] },
+    ]);
   };
 
-  const updateSpecification = (index: number, field: 'key' | 'values', value: any) => {
+  const updateSpecification = (
+    index: number,
+    field: "key" | "values",
+    value: any,
+  ) => {
     const newSpecs = [...formData.specifications];
     newSpecs[index] = { ...newSpecs[index], [field]: value };
-    updateField('specifications', newSpecs);
+    updateField("specifications", newSpecs);
   };
 
   const removeSpecification = (index: number) => {
     updateField(
-      'specifications',
-      formData.specifications.filter((_, i) => i !== index)
+      "specifications",
+      formData.specifications.filter((_, i) => i !== index),
     );
   };
 
   const addSpecValue = (specIndex: number, value: string) => {
     if (value.trim()) {
       const newSpecs = [...formData.specifications];
-      newSpecs[specIndex].values = [...newSpecs[specIndex].values, value.trim()];
-      updateField('specifications', newSpecs);
+      // Add value with empty photo
+      newSpecs[specIndex].values = [
+        ...newSpecs[specIndex].values,
+        { value: value.trim(), photo: "" },
+      ];
+      updateField("specifications", newSpecs);
     }
   };
 
-  const removeSpecValue = (specIndex: number, valueIndex: number) => {
+  const removeSpecValue = (
+    specIndex: number,
+    valueIndex: number,
+  ) => {
     const newSpecs = [...formData.specifications];
-    newSpecs[specIndex].values = newSpecs[specIndex].values.filter((_, i) => i !== valueIndex);
-    updateField('specifications', newSpecs);
+    newSpecs[specIndex].values = newSpecs[
+      specIndex
+    ].values.filter((_, i) => i !== valueIndex);
+    updateField("specifications", newSpecs);
   };
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Item name is required';
-    } else if (formData.name.length > 100) {
-      newErrors.name = 'Item name must be 100 characters or less';
-    }
+    if (!formData.name.trim())
+      newErrors.name = "Item name is required";
+    else if (formData.name.length > 100)
+      newErrors.name =
+        "Item name must be 100 characters or less";
 
-    if (!formData.category.trim()) {
-      newErrors.category = 'Category is required';
-    }
-
-    if (!formData.uom.trim()) {
-      newErrors.uom = 'Unit of Measure is required';
-    }
+    if (!formData.category.trim())
+      newErrors.category = "Category is required";
+    if (!formData.uom.trim())
+      newErrors.uom = "Unit of Measure is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -123,16 +192,14 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
   const handleSubmit = (saveAndAddAnother = false) => {
     if (validate()) {
       onSave(formData);
-      
       if (saveAndAddAnother) {
-        // Reset form
         setFormData({
-          name: '',
-          category: '',
-          uom: '',
-          photo: '',
+          name: "",
+          category: "",
+          uom: "",
+          photo: "",
           specifications: [],
-          status: 'active',
+          status: "active",
         });
         setHasChanges(false);
       }
@@ -140,11 +207,8 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
   };
 
   const handleCancel = () => {
-    if (hasChanges) {
-      setShowCancelConfirm(true);
-    } else {
-      onCancel();
-    }
+    if (hasChanges) setShowCancelConfirm(true);
+    else onCancel();
   };
 
   return (
@@ -155,85 +219,65 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
           onClick={handleCancel}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
         >
-          <ChevronLeft className="w-4 h-4" />
-          Back to Item List
+          <ChevronLeft className="w-4 h-4" /> Back to Item List
         </button>
-        <h2 className="text-gray-900">{item ? 'Edit Item' : 'Create New Item'}</h2>
-        <p className="text-gray-600 mt-1">
-          {item ? `Editing: ${item.name}` : 'Add a new item to your catalog'}
-        </p>
+        <h2 className="text-gray-900">
+          {item ? "Edit Item" : "Create New Item"}
+        </h2>
       </div>
 
       {/* Form */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 max-w-3xl">
         {/* Section 1: Basic Information */}
         <div className="mb-8">
-          <h3 className="text-gray-900 mb-4 pb-2 border-b border-gray-200">Basic Information</h3>
+          <h3 className="text-gray-900 mb-4 pb-2 border-b border-gray-200">
+            Basic Information
+          </h3>
 
-          <FormField label="Item Name" required error={errors.name}>
+          <FormField
+            label="Item Name"
+            required
+            error={errors.name}
+          >
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => updateField('name', e.target.value)}
+              onChange={(e) =>
+                updateField("name", e.target.value)
+              }
               maxLength={100}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
               placeholder="Enter item name"
             />
-            <p className="mt-1 text-gray-500">
-              {formData.name.length}/100 characters
-            </p>
           </FormField>
 
-          <FormField label="Item Category" required error={errors.category}>
-            {showNewCategory ? (
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-                  placeholder="Enter new category"
-                />
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    if (newCategory.trim()) {
-                      updateField('category', newCategory.trim());
-                      setShowNewCategory(false);
-                      setNewCategory('');
-                    }
-                  }}
-                >
-                  Add
-                </Button>
-                <Button variant="secondary" onClick={() => setShowNewCategory(false)}>
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <select
-                value={formData.category}
-                onChange={(e) => {
-                  if (e.target.value === '__new__') {
-                    setShowNewCategory(true);
-                  } else {
-                    updateField('category', e.target.value);
-                  }
-                }}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-              >
-                <option value="">Select category</option>
-                {standardCategories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-                <option value="__new__">+ Add New Category</option>
-              </select>
-            )}
+          <FormField
+            label="Item Category"
+            required
+            error={errors.category}
+          >
+            <select
+              value={formData.category}
+              onChange={(e) =>
+                updateField("category", e.target.value)
+              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+            >
+              <option value="">Select category</option>
+              {/* Consuming from Item Categories Configuration */}
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </FormField>
 
-          <FormField label="Unit of Measure (UoM)" required error={errors.uom}>
+          <FormField
+            label="Unit of Measure (UoM)"
+            required
+            error={errors.uom}
+          >
             {showCustomUom ? (
               <div className="flex gap-2">
                 <input
@@ -248,15 +292,18 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
                   variant="primary"
                   onClick={() => {
                     if (customUom.trim()) {
-                      updateField('uom', customUom.trim());
+                      updateField("uom", customUom.trim());
                       setShowCustomUom(false);
-                      setCustomUom('');
+                      setCustomUom("");
                     }
                   }}
                 >
                   Add
                 </Button>
-                <Button variant="secondary" onClick={() => setShowCustomUom(false)}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowCustomUom(false)}
+                >
                   Cancel
                 </Button>
               </div>
@@ -264,11 +311,9 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
               <select
                 value={formData.uom}
                 onChange={(e) => {
-                  if (e.target.value === '__custom__') {
+                  if (e.target.value === "__custom__")
                     setShowCustomUom(true);
-                  } else {
-                    updateField('uom', e.target.value);
-                  }
+                  else updateField("uom", e.target.value);
                 }}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
               >
@@ -286,9 +331,14 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
 
         {/* Section 2: Item Photo */}
         <div className="mb-8">
-          <h3 className="text-gray-900 mb-4 pb-2 border-b border-gray-200">Item Photo</h3>
-
-          <FormField label="Photo Upload" error={errors.photo} helpText="Recommended: 800x800px, JPG or PNG, max 5MB">
+          <h3 className="text-gray-900 mb-4 pb-2 border-b border-gray-200">
+            Main Photo
+          </h3>
+          <FormField
+            label="Photo Upload"
+            error={errors.photo}
+            helpText="Default photo for item and variants"
+          >
             <div className="flex gap-4">
               {formData.photo ? (
                 <div className="relative">
@@ -298,7 +348,7 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
                     className="w-32 h-32 object-cover rounded-lg border border-gray-300"
                   />
                   <button
-                    onClick={() => updateField('photo', '')}
+                    onClick={() => updateField("photo", "")}
                     className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                   >
                     <X className="w-4 h-4" />
@@ -312,18 +362,16 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
                   <Upload className="w-8 h-8 text-gray-400" />
                 </div>
               )}
-              
-              <div className="flex flex-col gap-2">
-                <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-                  {formData.photo ? 'Change Photo' : 'Upload Photo'}
+              <div className="flex flex-col gap-2 justify-center">
+                <Button
+                  variant="secondary"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {formData.photo
+                    ? "Change Photo"
+                    : "Upload Photo"}
                 </Button>
-                {formData.photo && (
-                  <Button variant="tertiary" onClick={() => updateField('photo', '')}>
-                    Remove Photo
-                  </Button>
-                )}
               </div>
-              
               <input
                 ref={fileInputRef}
                 type="file"
@@ -335,97 +383,41 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
           </FormField>
         </div>
 
-        {/* Section 3: Specifications */}
+        {/* Section 3: Status */}
         <div className="mb-8">
-          <h3 className="text-gray-900 mb-2 pb-2 border-b border-gray-200">Specifications</h3>
-          <p className="text-gray-600 mb-4">
-            Define product variants/attributes. Example: Color: Red, Black, Brown | Size: XL, L, M
-          </p>
-
-          <div className="space-y-4">
-            {formData.specifications.map((spec, specIndex) => (
-              <div key={specIndex} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex gap-4 mb-3">
-                  <input
-                    type="text"
-                    value={spec.key}
-                    onChange={(e) => updateSpecification(specIndex, 'key', e.target.value)}
-                    maxLength={50}
-                    placeholder="Specification name (e.g., Color, Size)"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-                  />
-                  <button
-                    onClick={() => removeSpecification(specIndex)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="mb-2">
-                  <label className="block text-gray-700 mb-2">Values</label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {spec.values.map((value, valueIndex) => (
-                      <span
-                        key={valueIndex}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full"
-                      >
-                        {value}
-                        <button
-                          onClick={() => removeSpecValue(specIndex, valueIndex)}
-                          className="text-gray-600 hover:text-red-600"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Type value and press Enter"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ',') {
-                        e.preventDefault();
-                        addSpecValue(specIndex, e.currentTarget.value);
-                        e.currentTarget.value = '';
-                      }
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-                  />
-                </div>
-              </div>
-            ))}
-
-            <Button variant="secondary" onClick={addSpecification}>
-              <Plus className="w-4 h-4" />
-              Add Specification
-            </Button>
-          </div>
-        </div>
-
-        {/* Section 4: Status */}
-        <div className="mb-8">
-          <h3 className="text-gray-900 mb-4 pb-2 border-b border-gray-200">Status</h3>
-
+          <h3 className="text-gray-900 mb-4 pb-2 border-b border-gray-200">
+            Status
+          </h3>
           <FormField label="Item Status" required>
             <ToggleSwitch
-              checked={formData.status === 'active'}
-              onChange={(checked) => updateField('status', checked ? 'active' : 'inactive')}
-              label={formData.status === 'active' ? 'Active' : 'Inactive'}
+              checked={formData.status === "active"}
+              onChange={(checked) =>
+                updateField(
+                  "status",
+                  checked ? "active" : "inactive",
+                )
+              }
+              label={
+                formData.status === "active"
+                  ? "Active"
+                  : "Inactive"
+              }
             />
-            <p className="mt-2 text-gray-600">
-              {formData.status === 'inactive' && 'Warning: Inactive items cannot be selected in RedPartners module'}
-            </p>
           </FormField>
         </div>
 
-        {/* Form Actions */}
         <div className="flex gap-3 pt-6 border-t border-gray-200">
-          <Button variant="primary" onClick={() => handleSubmit(false)}>
+          <Button
+            variant="primary"
+            onClick={() => handleSubmit(false)}
+          >
             Save
           </Button>
           {!item && (
-            <Button variant="secondary" onClick={() => handleSubmit(true)}>
+            <Button
+              variant="secondary"
+              onClick={() => handleSubmit(true)}
+            >
               Save & Add Another
             </Button>
           )}
@@ -435,7 +427,6 @@ export function ItemForm({ item, onSave, onCancel, existingCodes }: ItemFormProp
         </div>
       </div>
 
-      {/* Cancel Confirmation */}
       <ConfirmDialog
         isOpen={showCancelConfirm}
         onClose={() => setShowCancelConfirm(false)}

@@ -48,7 +48,8 @@ export function CategoryList({
     const matchesSearch =
       category.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      category.description.toLowerCase().includes(searchTerm.toLowerCase());
+      category.brandName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.itemCategory.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || category.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -79,7 +80,7 @@ export function CategoryList({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Search by code, name, or description..."
+              placeholder="Search by item category, brand name, or category name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
@@ -109,9 +110,9 @@ export function CategoryList({
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-gray-700">Category Code</th>
+                <th className="px-6 py-3 text-left text-gray-700">Item Category</th>
+                <th className="px-6 py-3 text-left text-gray-700">Brand Name</th>
                 <th className="px-6 py-3 text-left text-gray-700">Category Name</th>
-                <th className="px-6 py-3 text-left text-gray-700">Description</th>
                 <th className="px-6 py-3 text-left text-gray-700">Status</th>
                 <th className="px-6 py-3 text-left text-gray-700">Items Count</th>
                 <th className="px-6 py-3 text-left text-gray-700">Date Created</th>
@@ -121,14 +122,14 @@ export function CategoryList({
             <tbody className="divide-y divide-gray-200">
               {filteredCategories.map((category) => (
                 <tr key={category.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-gray-600">{category.code}</td>
+                  <td className="px-6 py-4 text-gray-600">{category.itemCategory}</td>
+                  <td className="px-6 py-4 text-gray-600">{category.brandName}</td>
                   <td
                     className="px-6 py-4 cursor-pointer hover:underline"
                     onClick={() => onEditCategory(category)}
                   >
                     {category.name}
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{category.description}</td>
                   <td className="px-6 py-4">
                     <ToggleSwitch
                       checked={category.status === 'active'}

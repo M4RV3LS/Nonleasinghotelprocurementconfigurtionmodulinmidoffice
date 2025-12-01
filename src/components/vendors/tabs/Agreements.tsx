@@ -14,12 +14,13 @@ interface AgreementsProps {
 export function Agreements({ agreements, onChange }: AgreementsProps) {
   const [showModal, setShowModal] = useState(false);
   const [editingAgreement, setEditingAgreement] = useState<Agreement | null>(null);
-  const [formData, setFormData] = useState<Omit<Agreement, 'id'>>({
+  const [formData, setFormData] = useState<Omit<Agreement, 'id'>>(({
+    type: 'agreement',
     contractNumber: '',
     startDate: '',
     endDate: '',
     documentLink: '',
-  });
+  }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [deleteConfirm, setDeleteConfirm] = useState<{
     isOpen: boolean;
@@ -29,6 +30,7 @@ export function Agreements({ agreements, onChange }: AgreementsProps) {
   const handleAdd = () => {
     setEditingAgreement(null);
     setFormData({
+      type: 'agreement',
       contractNumber: '',
       startDate: '',
       endDate: '',
@@ -41,6 +43,7 @@ export function Agreements({ agreements, onChange }: AgreementsProps) {
   const handleEdit = (agreement: Agreement) => {
     setEditingAgreement(agreement);
     setFormData({
+      type: agreement.type || 'agreement',
       contractNumber: agreement.contractNumber,
       startDate: agreement.startDate,
       endDate: agreement.endDate,
@@ -222,6 +225,33 @@ export function Agreements({ agreements, onChange }: AgreementsProps) {
         size="lg"
       >
         <div className="space-y-4">
+          <FormField label="Type" required>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="type"
+                  value="agreement"
+                  checked={formData.type === 'agreement'}
+                  onChange={(e) => setFormData({ ...formData, type: 'agreement' })}
+                  className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224]"
+                />
+                <span className="text-gray-900">Agreement</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="type"
+                  value="offering"
+                  checked={formData.type === 'offering'}
+                  onChange={(e) => setFormData({ ...formData, type: 'offering' })}
+                  className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224]"
+                />
+                <span className="text-gray-900">Offering</span>
+              </label>
+            </div>
+          </FormField>
+
           <FormField label="Contract Number" required error={errors.contractNumber}>
             <input
               type="text"

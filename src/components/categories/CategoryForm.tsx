@@ -12,13 +12,31 @@ interface CategoryFormProps {
   existingNames: string[];
 }
 
+const BRAND_NAMES = [
+  'Reddoorz',
+  'Reddoorz Premium',
+  'RedLiving',
+  'Sans',
+  'Sans Vibe',
+  'Sans Stay',
+  'Sans Elite',
+  'Urban View',
+  'The Lavana',
+  'No Branding',
+  'Vibes by SANS',
+];
+
+const ITEM_CATEGORIES = ['Branding Item', 'Ops Item', 'Others'] as const;
+
 export function CategoryForm({ category, onSave, onCancel, existingNames }: CategoryFormProps) {
-  const [formData, setFormData] = useState<Omit<ItemCategory, 'id' | 'createdAt' | 'itemsCount' | 'isSystemDefault'>>({
+  const [formData, setFormData] = useState<Omit<ItemCategory, 'id' | 'createdAt' | 'itemsCount' | 'isSystemDefault'>>(({
     code: category?.code || '',
+    brandName: category?.brandName || '',
+    itemCategory: category?.itemCategory || 'Ops Item',
     name: category?.name || '',
     description: category?.description || '',
     status: category?.status || 'active',
-  });
+  }));
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -32,6 +50,14 @@ export function CategoryForm({ category, onSave, onCancel, existingNames }: Cate
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
+
+    if (!formData.brandName) {
+      newErrors.brandName = 'Brand name is required';
+    }
+
+    if (!formData.itemCategory) {
+      newErrors.itemCategory = 'Item category is required';
+    }
 
     if (!formData.name.trim()) {
       newErrors.name = 'Category name is required';
@@ -91,6 +117,34 @@ export function CategoryForm({ category, onSave, onCancel, existingNames }: Cate
           </FormField>
         )}
 
+        <FormField label="Brand Name" required error={errors.brandName}>
+          <select
+            value={formData.brandName}
+            onChange={(e) => updateField('brandName', e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+          >
+            {BRAND_NAMES.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand}
+              </option>
+            ))}
+          </select>
+        </FormField>
+
+        <FormField label="Item Category" required error={errors.itemCategory}>
+          <select
+            value={formData.itemCategory}
+            onChange={(e) => updateField('itemCategory', e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+          >
+            {ITEM_CATEGORIES.map((itemCategory) => (
+              <option key={itemCategory} value={itemCategory}>
+                {itemCategory}
+              </option>
+            ))}
+          </select>
+        </FormField>
+
         <FormField label="Category Name" required error={errors.name}>
           <input
             type="text"
@@ -103,17 +157,19 @@ export function CategoryForm({ category, onSave, onCancel, existingNames }: Cate
           <p className="mt-1 text-gray-500">{formData.name.length}/100 characters</p>
         </FormField>
 
-        <FormField label="Description" error={errors.description}>
-          <textarea
-            value={formData.description}
-            onChange={(e) => updateField('description', e.target.value)}
-            maxLength={500}
-            rows={3}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-            placeholder="Enter category description"
-          />
-          <p className="mt-1 text-gray-500">{formData.description.length}/500 characters</p>
-        </FormField>
+        {category && (
+          <FormField label="Description" error={errors.description}>
+            <textarea
+              value={formData.description}
+              onChange={(e) => updateField('description', e.target.value)}
+              maxLength={500}
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+              placeholder="Enter category description"
+            />
+            <p className="mt-1 text-gray-500">{formData.description.length}/500 characters</p>
+          </FormField>
+        )}
 
         {category && (
           <FormField label="Status" required>

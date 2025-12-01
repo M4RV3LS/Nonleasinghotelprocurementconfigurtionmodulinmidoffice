@@ -1,69 +1,54 @@
-import { useState } from 'react';
-import { Order } from '../ReportsModule';
-import { Button } from '../shared/Button';
-import { Modal } from '../shared/Modal';
-import { Search, Download, Eye, MessageSquare, Mail } from 'lucide-react';
+import { useState } from "react";
+import { Order } from "../../mock-data";
+import { Button } from "../shared/Button";
+import { Modal } from "../shared/Modal";
+import {
+  Eye,
+  MessageSquare,
+  Mail,
+  Download,
+} from "lucide-react";
 
 interface OrderTableProps {
   orders: Order[];
 }
 
 export function OrderTable({ orders }: OrderTableProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string[]>(['requested', 'sent', 'cancelled']);
-  const [channelFilter, setChannelFilter] = useState<string[]>(['whatsapp', 'email']);
-  const [regionFilter, setRegionFilter] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedOrder, setSelectedOrder] =
+    useState<Order | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  // Filter orders
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.propertyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.vendorName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter.includes(order.status);
-    const matchesChannel = channelFilter.includes(order.channel);
-    const matchesRegion = !regionFilter || order.propertyRegion === regionFilter;
-    return matchesSearch && matchesStatus && matchesChannel && matchesRegion;
-  });
-
-  const toggleStatusFilter = (status: string) => {
-    if (statusFilter.includes(status)) {
-      setStatusFilter(statusFilter.filter((s) => s !== status));
-    } else {
-      setStatusFilter([...statusFilter, status]);
-    }
-  };
-
-  const toggleChannelFilter = (channel: string) => {
-    if (channelFilter.includes(channel)) {
-      setChannelFilter(channelFilter.filter((c) => c !== channel));
-    } else {
-      setChannelFilter([...channelFilter, channel]);
-    }
-  };
+  // Local text search (optional, to find specific ID or Name within the filtered results)
+  const filteredOrders = orders.filter(
+    (order) =>
+      order.id
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      order.propertyName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      order.propertyCode
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      order.vendorName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()),
+  );
 
   const getStatusBadge = (status: string) => {
     const styles = {
-      requested: 'bg-blue-100 text-blue-800',
-      sent: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800',
-    };
-    const icons = {
-      requested: '🕐',
-      sent: '✓',
-      cancelled: '✗',
+      requested: "bg-blue-100 text-blue-800",
+      sent: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800",
     };
     return (
-      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full ${styles[status as keyof typeof styles]}`}>
-        {icons[status as keyof typeof icons]} {status.charAt(0).toUpperCase() + status.slice(1)}
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${styles[status as keyof typeof styles]}`}
+      >
+        {status}
       </span>
     );
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `Rp ${amount.toLocaleString('id-ID')}`;
   };
 
   const handleViewDetails = (order: Order) => {
@@ -71,260 +56,223 @@ export function OrderTable({ orders }: OrderTableProps) {
     setShowDetailModal(true);
   };
 
-  const exportToCSV = () => {
-    // CSV export logic would go here
-    alert('Export to CSV functionality');
-  };
-
   return (
-    <div>
-      {/* Filters */}
-      <div className="mb-6 space-y-4">
-        <div className="flex gap-4 items-center">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search by Order ID, Property, or Vendor..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
-            />
-          </div>
-          <Button variant="secondary" onClick={exportToCSV}>
-            <Download className="w-4 h-4" />
-            Export
-          </Button>
-        </div>
-
-        <div className="flex gap-4 flex-wrap">
-          <div className="flex gap-2 items-center">
-            <span className="text-gray-700">Status:</span>
-            <button
-              onClick={() => toggleStatusFilter('requested')}
-              className={`px-3 py-1.5 rounded-lg border transition-colors ${
-                statusFilter.includes('requested')
-                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
-                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              Requested
-            </button>
-            <button
-              onClick={() => toggleStatusFilter('sent')}
-              className={`px-3 py-1.5 rounded-lg border transition-colors ${
-                statusFilter.includes('sent')
-                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
-                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              Sent
-            </button>
-            <button
-              onClick={() => toggleStatusFilter('cancelled')}
-              className={`px-3 py-1.5 rounded-lg border transition-colors ${
-                statusFilter.includes('cancelled')
-                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
-                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              Cancelled
-            </button>
-          </div>
-
-          <div className="flex gap-2 items-center">
-            <span className="text-gray-700">Channel:</span>
-            <button
-              onClick={() => toggleChannelFilter('whatsapp')}
-              className={`px-3 py-1.5 rounded-lg border transition-colors ${
-                channelFilter.includes('whatsapp')
-                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
-                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              WhatsApp
-            </button>
-            <button
-              onClick={() => toggleChannelFilter('email')}
-              className={`px-3 py-1.5 rounded-lg border transition-colors ${
-                channelFilter.includes('email')
-                  ? 'bg-[#ec2224] text-white border-[#ec2224]'
-                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              Email
-            </button>
-          </div>
-        </div>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <input
+          type="text"
+          placeholder="Quick search within results..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ec2224]"
+        />
+        <Button
+          variant="secondary"
+          onClick={() => alert("Exporting to CSV...")}
+        >
+          <Download className="w-4 h-4" /> Export CSV
+        </Button>
       </div>
 
-      {/* Table */}
-      {filteredOrders.length === 0 ? (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-12 text-center">
-          <p className="text-gray-500 mb-4">No orders found matching your filters</p>
-        </div>
-      ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Property Code
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Property Name
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Region
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Order ID
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Created On
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Channel
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Items
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Qty
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Vendor
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-700">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredOrders.length === 0 ? (
                 <tr>
-                  <th className="px-4 py-3 text-left text-gray-700">Order ID</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Created On</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Property</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Region</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Channel</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Items</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Qty</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Vendor</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Total Amount</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Status</th>
-                  <th className="px-4 py-3 text-left text-gray-700">Actions</th>
+                  <td
+                    colSpan={11}
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    No orders found matching criteria.
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredOrders.map((order) => {
-                  const totalQty = order.items.reduce((sum, item) => sum + item.quantity, 0);
+              ) : (
+                filteredOrders.map((order) => {
+                  const totalQty = order.items.reduce(
+                    (sum, item) => sum + item.quantity,
+                    0,
+                  );
+                  const itemPreview = order.items
+                    .map((i) => i.itemName)
+                    .join(", ");
+
                   return (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-gray-600">{order.id}</td>
-                      <td className="px-4 py-3 text-gray-600">{order.createdOn}</td>
-                      <td className="px-4 py-3">
-                        <div>
-                          <p className="text-gray-600">{order.propertyCode}</p>
-                          <p>{order.propertyName}</p>
-                        </div>
+                    <tr
+                      key={order.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-4 py-3 font-medium text-[#ec2224]">
+                        {order.propertyCode}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{order.propertyRegion}</td>
+                      <td className="px-4 py-3 text-gray-900">
+                        {order.propertyName}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {order.propertyRegion}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 font-mono">
+                        {order.id}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                        {order.createdOn}
+                      </td>
                       <td className="px-4 py-3">
-                        {order.channel === 'whatsapp' ? (
-                          <span className="inline-flex items-center gap-1">
-                            <MessageSquare className="w-4 h-4 text-green-600" />
+                        {order.channel === "whatsapp" ? (
+                          <span className="inline-flex items-center gap-1 text-green-700 bg-green-50 px-2 py-0.5 rounded text-xs">
+                            <MessageSquare className="w-3 h-3" />{" "}
                             WhatsApp
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1">
-                            <Mail className="w-4 h-4 text-blue-600" />
-                            Email
+                          <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-xs">
+                            <Mail className="w-3 h-3" /> Email
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        {order.items.length <= 3 ? (
-                          <div className="space-y-1">
-                            {order.items.map((item, idx) => (
-                              <div key={idx} className="text-gray-600">
-                                • {item.itemName} (x{item.quantity})
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="space-y-1">
-                            {order.items.slice(0, 2).map((item, idx) => (
-                              <div key={idx} className="text-gray-600">
-                                • {item.itemName} (x{item.quantity})
-                              </div>
-                            ))}
-                            <button
-                              onClick={() => handleViewDetails(order)}
-                              className="text-[#ec2224] hover:underline"
-                            >
-                              +{order.items.length - 2} more items
-                            </button>
-                          </div>
-                        )}
+                      <td
+                        className="px-4 py-3 text-gray-600 max-w-xs truncate"
+                        title={itemPreview}
+                      >
+                        {order.items.length} Item
+                        {order.items.length > 1 ? "s" : ""}
+                        <span className="text-gray-400 ml-1">
+                          ({order.items[0].itemName}...)
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{totalQty}</td>
-                      <td className="px-4 py-3 text-gray-600">{order.vendorName}</td>
-                      <td className="px-4 py-3 text-gray-600">{formatCurrency(order.totalAmount)}</td>
-                      <td className="px-4 py-3">{getStatusBadge(order.status)}</td>
+                      <td className="px-4 py-3 text-gray-600 font-medium">
+                        {totalQty}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {order.vendorName}
+                      </td>
+                      <td className="px-4 py-3">
+                        {getStatusBadge(order.status)}
+                      </td>
                       <td className="px-4 py-3">
                         <button
-                          onClick={() => handleViewDetails(order)}
-                          className="p-2 hover:bg-gray-100 rounded-lg"
+                          onClick={() =>
+                            handleViewDetails(order)
+                          }
+                          className="text-gray-500 hover:text-[#ec2224] transition-colors"
                           title="View Details"
                         >
-                          <Eye className="w-4 h-4 text-gray-600" />
+                          <Eye className="w-5 h-5" />
                         </button>
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
+                })
+              )}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
-      {/* Order Detail Modal */}
+      {/* Detail Modal (Kept simple for brevity) */}
       {selectedOrder && (
         <Modal
           isOpen={showDetailModal}
           onClose={() => setShowDetailModal(false)}
-          title={`Order Details - ${selectedOrder.id}`}
+          title={`Order Details: ${selectedOrder.id}`}
           size="lg"
         >
-          <div className="space-y-6">
-            {/* Header Info */}
-            <div className="flex items-center justify-between">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
               <div>
-                <p className="text-gray-600">Created: {selectedOrder.createdOn}</p>
-                <p className="text-gray-600">
-                  Channel: {selectedOrder.channel === 'whatsapp' ? '📱 WhatsApp' : '📧 Email'}
+                <p className="text-sm text-gray-500">
+                  Property
+                </p>
+                <p className="font-medium">
+                  {selectedOrder.propertyName} (
+                  {selectedOrder.propertyCode})
                 </p>
               </div>
-              {getStatusBadge(selectedOrder.status)}
+              <div>
+                <p className="text-sm text-gray-500">Vendor</p>
+                <p className="font-medium">
+                  {selectedOrder.vendorName}
+                </p>
+              </div>
             </div>
 
-            {/* Property Information */}
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-gray-900 mb-2">Property Information</h4>
-              <p className="text-gray-600">Code: {selectedOrder.propertyCode}</p>
-              <p className="text-gray-600">Name: {selectedOrder.propertyName}</p>
-              <p className="text-gray-600">Region: {selectedOrder.propertyRegion}</p>
-            </div>
-
-            {/* Order Items */}
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-gray-900 mb-2">Order Items</h4>
-              <table className="w-full">
+            <div>
+              <h4 className="font-medium mb-2">Order Items</h4>
+              <table className="w-full text-sm border border-gray-200 rounded-lg">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-3 py-2 text-left text-gray-700">Item Name</th>
-                    <th className="px-3 py-2 text-left text-gray-700">Qty</th>
-                    <th className="px-3 py-2 text-left text-gray-700">Unit Price</th>
-                    <th className="px-3 py-2 text-left text-gray-700">Subtotal</th>
+                    <th className="px-3 py-2 text-left">
+                      Item Name
+                    </th>
+                    <th className="px-3 py-2 text-right">
+                      Qty
+                    </th>
+                    <th className="px-3 py-2 text-right">
+                      Subtotal
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody>
                   {selectedOrder.items.map((item, idx) => (
-                    <tr key={idx}>
-                      <td className="px-3 py-2 text-gray-600">{item.itemName}</td>
-                      <td className="px-3 py-2 text-gray-600">{item.quantity}</td>
-                      <td className="px-3 py-2 text-gray-600">{formatCurrency(item.unitPrice)}</td>
-                      <td className="px-3 py-2 text-gray-600">{formatCurrency(item.subtotal)}</td>
+                    <tr
+                      key={idx}
+                      className="border-t border-gray-100"
+                    >
+                      <td className="px-3 py-2">
+                        {item.itemName}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        {item.quantity}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        Rp {item.subtotal.toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-
-            {/* Vendor Information */}
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-gray-900 mb-2">Vendor Information</h4>
-              <p className="text-gray-600">Vendor: {selectedOrder.vendorName}</p>
-            </div>
-
-            {/* Order Summary */}
-            <div className="border-t border-gray-200 pt-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-900">Total:</span>
-                <span className="text-gray-900">{formatCurrency(selectedOrder.totalAmount)}</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
-              <Button variant="secondary" onClick={() => setShowDetailModal(false)}>
+            <div className="flex justify-end pt-4">
+              <Button
+                variant="secondary"
+                onClick={() => setShowDetailModal(false)}
+              >
                 Close
               </Button>
             </div>

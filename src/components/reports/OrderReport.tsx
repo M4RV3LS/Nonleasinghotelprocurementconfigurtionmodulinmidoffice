@@ -1,4 +1,10 @@
-import { Order } from '../ReportsModule';
+import { Order } from "../../mock-data";
+import {
+  Package,
+  ShoppingCart,
+  DollarSign,
+  TrendingUp,
+} from "lucide-react";
 
 interface OrderReportProps {
   orders: Order[];
@@ -10,24 +16,30 @@ interface ItemAggregate {
   totalOrders: number;
   totalQuantity: number;
   totalAmount: number;
-  avgOrderQty: number;
-  avgUnitPrice: number;
-  percentOfTotal: number;
 }
 
 export function OrderReport({ orders }: OrderReportProps) {
-  // Calculate summary metrics
+  // 1. Calculate Global Summary Metrics
   const totalOrders = orders.length;
-  const totalQuantity = orders.reduce((sum, order) => 
-    sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
+  const totalQuantity = orders.reduce(
+    (sum, order) =>
+      sum +
+      order.items.reduce(
+        (itemSum, item) => itemSum + item.quantity,
+        0,
+      ),
+    0,
   );
-  const totalAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+  const totalAmount = orders.reduce(
+    (sum, order) => sum + order.totalAmount,
+    0,
+  );
 
-  // Aggregate by item
+  // 2. Aggregate Data per Item
   const itemMap = new Map<string, ItemAggregate>();
-  
-  orders.forEach(order => {
-    order.items.forEach(item => {
+
+  orders.forEach((order) => {
+    order.items.forEach((item) => {
       const existing = itemMap.get(item.itemCode);
       if (existing) {
         existing.totalOrders += 1;
@@ -40,87 +52,128 @@ export function OrderReport({ orders }: OrderReportProps) {
           totalOrders: 1,
           totalQuantity: item.quantity,
           totalAmount: item.subtotal,
-          avgOrderQty: 0,
-          avgUnitPrice: 0,
-          percentOfTotal: 0,
         });
       }
     });
   });
 
-  // Calculate averages and percentages
-  const itemAggregates = Array.from(itemMap.values()).map(item => ({
-    ...item,
-    avgOrderQty: item.totalQuantity / item.totalOrders,
-    avgUnitPrice: item.totalAmount / item.totalQuantity,
-    percentOfTotal: (item.totalAmount / totalAmount) * 100,
-  })).sort((a, b) => b.totalAmount - a.totalAmount);
+  // Convert map to array and sort by Total Amount (Value) descending
+  const itemAggregates = Array.from(itemMap.values()).sort(
+    (a, b) => b.totalAmount - a.totalAmount,
+  );
 
   const formatCurrency = (amount: number) => {
-    return `Rp ${amount.toLocaleString('id-ID')}`;
+    return `Rp ${amount.toLocaleString("id-ID")}`;
   };
 
   return (
-    <div>
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-gray-600 mb-2">Total Orders</p>
-          <p className="text-gray-900">{totalOrders}</p>
+    <div className="space-y-8">
+      {/* Top Level Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-start justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Total Orders
+            </p>
+            <h3 className="text-2xl font-bold text-gray-900 mt-2">
+              {totalOrders}
+            </h3>
+          </div>
+          <div className="p-3 bg-blue-50 rounded-lg">
+            <ShoppingCart className="w-6 h-6 text-blue-600" />
+          </div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-gray-600 mb-2">Total Quantity</p>
-          <p className="text-gray-900">{totalQuantity.toLocaleString()}</p>
+
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-start justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Total Quantity Requested
+            </p>
+            <h3 className="text-2xl font-bold text-gray-900 mt-2">
+              {totalQuantity.toLocaleString()}
+            </h3>
+          </div>
+          <div className="p-3 bg-purple-50 rounded-lg">
+            <Package className="w-6 h-6 text-purple-600" />
+          </div>
         </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-gray-600 mb-2">Total Order Value</p>
-          <p className="text-gray-900">{formatCurrency(totalAmount)}</p>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <p className="text-gray-600 mb-2">Most Ordered Item</p>
-          <p className="text-gray-900">{itemAggregates[0]?.itemName || 'N/A'}</p>
-          <p className="text-gray-600">{itemAggregates[0]?.totalQuantity.toLocaleString() || 0} units</p>
+
+        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-start justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Total Order Value
+            </p>
+            <h3 className="text-2xl font-bold text-gray-900 mt-2">
+              {formatCurrency(totalAmount)}
+            </h3>
+          </div>
+          <div className="p-3 bg-green-50 rounded-lg">
+            <DollarSign className="w-6 h-6 text-green-600" />
+          </div>
         </div>
       </div>
 
-      {/* Item-Level Report Table */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-gray-900">Item-Level Analytics</h3>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-gray-700">Item Code</th>
-                <th className="px-4 py-3 text-left text-gray-700">Item Name</th>
-                <th className="px-4 py-3 text-left text-gray-700">Total Orders</th>
-                <th className="px-4 py-3 text-left text-gray-700">Total Quantity</th>
-                <th className="px-4 py-3 text-left text-gray-700">Total Amount</th>
-                <th className="px-4 py-3 text-left text-gray-700">Avg Order Qty</th>
-                <th className="px-4 py-3 text-left text-gray-700">Avg Unit Price</th>
-                <th className="px-4 py-3 text-left text-gray-700">% of Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {itemAggregates.map((item, index) => (
-                <tr key={item.itemCode} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-gray-600">
-                    {index < 3 && <span className="mr-2">{['🥇', '🥈', '🥉'][index]}</span>}
+      {/* Item Level Cards */}
+      <div>
+        <h4 className="text-gray-900 font-semibold mb-4 text-lg">
+          Item Level Analytics
+        </h4>
+
+        {itemAggregates.length === 0 ? (
+          <div className="p-8 text-center bg-gray-50 rounded-lg border border-dashed border-gray-300 text-gray-500">
+            No item data available for the selected filters.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {itemAggregates.map((item) => (
+              <div
+                key={item.itemCode}
+                className="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="bg-gray-100 p-2 rounded text-gray-600 font-mono text-xs">
                     {item.itemCode}
-                  </td>
-                  <td className="px-4 py-3">{item.itemName}</td>
-                  <td className="px-4 py-3 text-gray-600">{item.totalOrders}</td>
-                  <td className="px-4 py-3 text-gray-600">{item.totalQuantity.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatCurrency(item.totalAmount)}</td>
-                  <td className="px-4 py-3 text-gray-600">{item.avgOrderQty.toFixed(1)}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatCurrency(item.avgUnitPrice)}</td>
-                  <td className="px-4 py-3 text-gray-600">{item.percentOfTotal.toFixed(1)}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                  <TrendingUp className="w-4 h-4 text-gray-400" />
+                </div>
+
+                <h5
+                  className="font-semibold text-gray-900 mb-4 line-clamp-2 h-12"
+                  title={item.itemName}
+                >
+                  {item.itemName}
+                </h5>
+
+                <div className="space-y-3 pt-3 border-t border-gray-100">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500">
+                      Orders Count:
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {item.totalOrders}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500">
+                      Total Qty:
+                    </span>
+                    <span className="font-medium text-gray-900">
+                      {item.totalQuantity.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500">
+                      Total Value:
+                    </span>
+                    <span className="font-medium text-[#ec2224]">
+                      {formatCurrency(item.totalAmount)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

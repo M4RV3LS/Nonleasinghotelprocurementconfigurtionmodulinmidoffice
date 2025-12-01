@@ -17,7 +17,7 @@ interface VendorProfileProps {
 
 export function VendorProfile({ vendor, onSave, onCancel, existingCodes }: VendorProfileProps) {
   const [activeTab, setActiveTab] = useState<'agreements' | 'basic' | 'payments' | 'items'>('agreements');
-  const [formData, setFormData] = useState<Omit<Vendor, 'id' | 'createdAt'>>({
+  const [formData, setFormData] = useState<Omit<Vendor, 'id' | 'createdAt'>>(({
     code: vendor?.code || '',
     name: vendor?.name || '',
     islands: vendor?.islands || [],
@@ -26,13 +26,15 @@ export function VendorProfile({ vendor, onSave, onCancel, existingCodes }: Vendo
     phone: vendor?.phone || '',
     email: vendor?.email || '',
     alternativePhone: vendor?.alternativePhone || '',
-    commission: vendor?.commission || 0,
-    commissionAgreement: vendor?.commissionAgreement || '',
+    ppn: vendor?.ppn || 0,
+    serviceCharge: vendor?.serviceCharge || 0,
+    pb1: vendor?.pb1 || 0,
+    requestDestination: vendor?.requestDestination || '',
     status: vendor?.status || 'active',
     paymentMethods: vendor?.paymentMethods || [],
     agreements: vendor?.agreements || [],
     itemMappings: vendor?.itemMappings || [],
-  });
+  }));
   
   const [hasChanges, setHasChanges] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -55,7 +57,7 @@ export function VendorProfile({ vendor, onSave, onCancel, existingCodes }: Vendo
   };
 
   const tabs = [
-    { id: 'agreements' as const, label: 'Agreements/Offerings' },
+    { id: 'agreements' as const, label: 'Legal Information' },
     { id: 'basic' as const, label: 'Basic Information' },
     { id: 'payments' as const, label: 'Payment Methods' },
     { id: 'items' as const, label: 'Item Mapping' },

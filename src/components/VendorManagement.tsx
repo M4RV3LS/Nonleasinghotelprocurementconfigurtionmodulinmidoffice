@@ -14,8 +14,10 @@ export interface Vendor {
   phone: string;
   email: string;
   alternativePhone?: string;
-  commission: number;
-  commissionAgreement?: string; // Agreement number linked to commission
+  ppn: number; // PPN (%) (VAT - Value Added Tax) - mandatory
+  serviceCharge: number; // Service Charge (%) - optional, default: 0
+  pb1: number; // PB1 (%) - optional, default: 0
+  requestDestination: string; // Which system this vendor serves
   status: 'active' | 'inactive';
   paymentMethods: string[]; // IDs of payment methods
   agreements: Agreement[];
@@ -25,6 +27,7 @@ export interface Vendor {
 
 export interface Agreement {
   id: string;
+  type: 'agreement' | 'offering'; // Type of legal document
   contractNumber: string;
   startDate: string;
   endDate: string;
@@ -34,7 +37,8 @@ export interface Agreement {
 export interface ItemMapping {
   id: string;
   itemId: string;
-  unitPrice: number;
+  priceType: 'fixed' | 'nonfixed';
+  unitPrice?: number; // Optional now, required only when priceType is 'fixed'
   agreementNumber?: string;
   minQuantity: number;
   multipleOf: number;
@@ -55,13 +59,16 @@ export function VendorManagement() {
       contactPerson: 'Juan Dela Cruz',
       phone: '+63 912 345 6789',
       email: 'juan@pacificsupplies.com',
-      commission: 15,
-      commissionAgreement: 'CTR-2024-001',
+      ppn: 15,
+      serviceCharge: 0,
+      pb1: 0,
+      requestDestination: 'System A',
       status: 'active',
       paymentMethods: ['1', '2'],
       agreements: [
         {
           id: '1',
+          type: 'agreement',
           contractNumber: 'CTR-2024-001',
           startDate: '2024-01-01',
           endDate: '2024-12-31',
