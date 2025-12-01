@@ -3,7 +3,6 @@ import { Item } from "../ItemConfiguration";
 import { Button } from "../shared/Button";
 import { ConfirmDialog } from "../shared/ConfirmDialog";
 import { ToggleSwitch } from "../shared/ToggleSwitch";
-import { ImageLightbox } from "../shared/ImageLightbox";
 import {
   Search,
   Plus,
@@ -11,7 +10,6 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  Eye,
 } from "lucide-react";
 
 interface ItemListProps {
@@ -55,17 +53,6 @@ export function ItemList({
     isOpen: false,
     itemId: "",
     currentStatus: "",
-  });
-  const [lightbox, setLightbox] = useState<{
-    isOpen: boolean;
-    imageUrl: string;
-    title: string;
-    subtitle: string;
-  }>({
-    isOpen: false,
-    imageUrl: "",
-    title: "",
-    subtitle: "",
   });
 
   // Get unique categories for filter dropdown
@@ -216,26 +203,19 @@ export function ItemList({
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <button
-                        onClick={() =>
-                          item.photo &&
-                          setLightbox({
-                            isOpen: true,
-                            imageUrl: item.photo,
-                            title: `${item.code} - ${item.name}`,
-                            subtitle: "Primary Photo",
-                          })
-                        }
-                        className={`p-2 rounded-lg ${item.photo ? "hover:bg-gray-100 text-blue-600" : "text-gray-400 cursor-not-allowed"}`}
-                        disabled={!item.photo}
-                        title={
-                          item.photo
-                            ? "View photo"
-                            : "No photo available"
-                        }
-                      >
-                        <Eye className="w-5 h-5" />
-                      </button>
+                      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                        {item.photo ? (
+                          <img
+                            src={item.photo}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            No photo
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td
                       className="px-6 py-4 text-[#ec2224] cursor-pointer hover:underline"
@@ -394,22 +374,6 @@ export function ItemList({
             : ""
         }`}
         confirmText="Change Status"
-      />
-
-      {/* Image Lightbox */}
-      <ImageLightbox
-        isOpen={lightbox.isOpen}
-        onClose={() =>
-          setLightbox({
-            isOpen: false,
-            imageUrl: "",
-            title: "",
-            subtitle: "",
-          })
-        }
-        imageUrl={lightbox.imageUrl}
-        title={lightbox.title}
-        subtitle={lightbox.subtitle}
       />
     </div>
   );

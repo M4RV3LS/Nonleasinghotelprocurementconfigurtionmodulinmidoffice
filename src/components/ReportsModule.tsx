@@ -1,17 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { OrderTable } from "./reports/OrderTable";
 import { OrderReport } from "./reports/OrderReport";
-import { MOCK_ORDERS, Order } from "../mock-data";
+import { MOCK_ORDERS, MOCK_VENDORS, Order } from "../mock-data";
 import { Button } from "./shared/Button";
 import {
   Search,
   Filter,
   Calendar as CalendarIcon,
   X,
+  ChevronDown,
 } from "lucide-react";
 
 export function ReportsModule() {
   const [orders] = useState<Order[]>(MOCK_ORDERS);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Filter States
   const [dateRange, setDateRange] = useState<{
@@ -21,14 +23,41 @@ export function ReportsModule() {
   const [statusFilter, setStatusFilter] = useState<string[]>(
     [],
   );
-  const [regionFilter, setRegionFilter] = useState("");
+  const [vendorFilter, setVendorFilter] = useState("");
+  const [regionFilter, setRegionFilter] = useState<string[]>([]);
+  const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
 
-  // Extract unique regions for filter dropdown
-  const regions = useMemo(
-    () =>
-      Array.from(new Set(orders.map((o) => o.propertyRegion))),
-    [orders],
-  );
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsRegionDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Clear region filter when vendor changes
+  useEffect(() => {
+    setRegionFilter([]);
+  }, [vendorFilter]);
+
+  // Get available regions based on selected vendor
+  const availableRegions = useMemo(() => {
+    if (!vendorFilter) {
+      // If no vendor selected, show all regions from orders
+      return Array.from(new Set(orders.map((o) => o.propertyRegion)));
+    }
+    // If vendor selected, show only provinces that vendor serves
+    const vendor = MOCK_VENDORS.find((v) => v.id === vendorFilter);
+    return vendor ? vendor.provinces : [];
+  }, [vendorFilter, orders]);
 
   // Filter Logic
   const filteredOrders = useMemo(() => {
@@ -52,13 +81,23 @@ export function ReportsModule() {
       )
         return false;
 
-      // 3. Region Filter
-      if (regionFilter && order.propertyRegion !== regionFilter)
+      // 3. Vendor Filter
+      if (vendorFilter) {
+        const vendor = MOCK_VENDORS.find((v) => v.id === vendorFilter);
+        if (vendor && order.vendorName !== vendor.name)
+          return false;
+      }
+
+      // 4. Region Filter (multiple)
+      if (
+        regionFilter.length > 0 &&
+        !regionFilter.includes(order.propertyRegion)
+      )
         return false;
 
       return true;
     });
-  }, [orders, dateRange, statusFilter, regionFilter]);
+  }, [orders, dateRange, statusFilter, vendorFilter, regionFilter]);
 
   const toggleStatus = (status: string) => {
     setStatusFilter((prev) =>
@@ -71,7 +110,25 @@ export function ReportsModule() {
   const clearFilters = () => {
     setDateRange({ start: "", end: "" });
     setStatusFilter([]);
-    setRegionFilter("");
+    setVendorFilter("");
+    setRegionFilter([]);
+    setIsRegionDropdownOpen(false);
+  };
+
+  const toggleRegion = (region: string) => {
+    setRegionFilter((prev) =>
+      prev.includes(region)
+        ? prev.filter((r) => r !== region)
+        : [...prev, region],
+    );
+  };
+
+  const selectAllRegions = () => {
+    setRegionFilter(availableRegions);
+  };
+
+  const clearAllRegions = () => {
+    setRegionFilter([]);
   };
 
   return (
@@ -94,7 +151,8 @@ export function ReportsModule() {
             disabled={
               !dateRange.start &&
               !dateRange.end &&
-              !regionFilter &&
+              !vendorFilter &&
+              regionFilter.length === 0 &&
               statusFilter.length === 0
             }
           >
@@ -136,27 +194,89 @@ export function ReportsModule() {
             </div>
           </div>
 
-          {/* Region Filter - Now takes 3/12 of the space */}
-          <div className="space-y-1 lg:col-span-3">
+          {/* Vendor Filter - Now takes 2/12 of the space */}
+          <div className="space-y-1 lg:col-span-2">
             <label className="text-sm font-medium text-gray-700">
-              Property Region
+              Vendor
             </label>
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-[#ec2224] focus:border-[#ec2224]"
-              value={regionFilter}
-              onChange={(e) => setRegionFilter(e.target.value)}
+              value={vendorFilter}
+              onChange={(e) => setVendorFilter(e.target.value)}
             >
-              <option value="">All Regions</option>
-              {regions.map((region) => (
-                <option key={region} value={region}>
-                  {region}
+              <option value="">All Vendors</option>
+              {MOCK_VENDORS.map((vendor) => (
+                <option key={vendor.id} value={vendor.id}>
+                  {vendor.name}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Status Filter - Now takes 4/12 of the space */}
-          <div className="space-y-1 lg:col-span-4">
+          {/* Region Filter - Now takes 3/12 of the space */}
+          <div className="space-y-1 lg:col-span-3 relative" ref={dropdownRef}>
+            <label className="text-sm font-medium text-gray-700">
+              Property Region
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsRegionDropdownOpen(!isRegionDropdownOpen)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-[#ec2224] focus:border-[#ec2224] flex items-center justify-between bg-white hover:bg-gray-50"
+            >
+              <span
+                className={
+                  regionFilter.length === 0 ? "text-gray-400" : "text-gray-900"
+                }
+              >
+                {regionFilter.length === 0
+                  ? "All Regions"
+                  : `${regionFilter.length} region${regionFilter.length > 1 ? "s" : ""} selected`}
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 text-gray-500 transition-transform ${isRegionDropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isRegionDropdownOpen && (
+              <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg">
+                <div className="flex gap-2 p-3 border-b border-gray-200">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={selectAllRegions}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={clearAllRegions}
+                  >
+                    Clear All
+                  </Button>
+                </div>
+                <div className="max-h-60 overflow-y-auto">
+                  {availableRegions.map((region) => (
+                    <label
+                      key={region}
+                      className="flex items-center gap-2 p-3 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={regionFilter.includes(region)}
+                        onChange={() => toggleRegion(region)}
+                        className="w-4 h-4 text-[#ec2224] focus:ring-[#ec2224] rounded"
+                      />
+                      <span className="text-sm">{region}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Status Filter - Now takes 2/12 of the space */}
+          <div className="space-y-1 lg:col-span-2">
             <label className="text-sm font-medium text-gray-700">
               Order Status
             </label>

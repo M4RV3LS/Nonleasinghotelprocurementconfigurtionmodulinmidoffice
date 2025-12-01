@@ -536,6 +536,10 @@
     height: calc(var(--spacing) * 12);
   }
 
+  .h-16 {
+    height: calc(var(--spacing) * 16);
+  }
+
   .h-32 {
     height: calc(var(--spacing) * 32);
   }
@@ -544,16 +548,12 @@
     height: 100%;
   }
 
+  .max-h-60 {
+    max-height: calc(var(--spacing) * 60);
+  }
+
   .max-h-80 {
     max-height: calc(var(--spacing) * 80);
-  }
-
-  .max-h-\[90vh\] {
-    max-height: 90vh;
-  }
-
-  .max-h-\[calc\(90vh-120px\)\] {
-    max-height: calc(90vh - 120px);
   }
 
   .min-h-\[80px\] {
@@ -592,6 +592,10 @@
     width: calc(var(--spacing) * 12);
   }
 
+  .w-16 {
+    width: calc(var(--spacing) * 16);
+  }
+
   .w-20 {
     width: calc(var(--spacing) * 20);
   }
@@ -622,10 +626,6 @@
 
   .max-w-6xl {
     max-width: var(--container-6xl);
-  }
-
-  .max-w-full {
-    max-width: 100%;
   }
 
   .max-w-lg {
@@ -981,10 +981,6 @@
 
   .bg-yellow-50 {
     background-color: var(--color-yellow-50);
-  }
-
-  .object-contain {
-    object-fit: contain;
   }
 
   .object-cover {
@@ -1441,14 +1437,14 @@
   }
 
   @media (width >= 64rem) {
-    .lg\:col-span-3 {
-      grid-column: span 3 / span 3;
+    .lg\:col-span-2 {
+      grid-column: span 2 / span 2;
     }
   }
 
   @media (width >= 64rem) {
-    .lg\:col-span-4 {
-      grid-column: span 4 / span 4;
+    .lg\:col-span-3 {
+      grid-column: span 3 / span 3;
     }
   }
 

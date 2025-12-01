@@ -319,3 +319,28 @@ export const MOCK_ORDERS: Order[] = [
     status: 'sent',
   },
 ];
+
+// Vendor Data for Reports Filter
+export interface VendorBasic {
+  id: string;
+  name: string;
+  provinces: string[]; // Province coverage
+}
+
+export const MOCK_VENDORS: VendorBasic[] = [
+  {
+    id: '1',
+    name: 'Pacific Supplies Ltd.',
+    provinces: ['DKI Jakarta (Jakarta)', 'Bali (Denpasar)', 'Jawa Barat (Bandung)'],
+  },
+  {
+    id: '2',
+    name: 'Eastern Supplies Co.',
+    provinces: ['Jawa Timur (Surabaya)', 'Jawa Tengah (Semarang)', 'DI Yogyakarta (Yogyakarta)'],
+  },
+  {
+    id: '3',
+    name: 'Western Suppliers',
+    provinces: ['Jawa Barat (Bandung)', 'Banten (Serang)', 'Lampung (Bandar Lampung)'],
+  },
+];
