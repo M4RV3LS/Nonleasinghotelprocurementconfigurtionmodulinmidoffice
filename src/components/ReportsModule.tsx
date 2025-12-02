@@ -1,7 +1,15 @@
+// src/components/ReportsModule.tsx
+
 import { useState, useMemo, useEffect, useRef } from "react";
 import { OrderTable } from "./reports/OrderTable";
 import { OrderReport } from "./reports/OrderReport";
-import { MOCK_ORDERS, MOCK_VENDORS, Order } from "../mock-data";
+// [Change 1] Added PROVINCES to the import
+import {
+  MOCK_ORDERS,
+  MOCK_VENDORS,
+  Order,
+  PROVINCES,
+} from "../mock-data";
 import { Button } from "./shared/Button";
 import {
   Search,
@@ -24,8 +32,11 @@ export function ReportsModule() {
     [],
   );
   const [vendorFilter, setVendorFilter] = useState("");
-  const [regionFilter, setRegionFilter] = useState<string[]>([]);
-  const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
+  const [regionFilter, setRegionFilter] = useState<string[]>(
+    [],
+  );
+  const [isRegionDropdownOpen, setIsRegionDropdownOpen] =
+    useState(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -40,7 +51,10 @@ export function ReportsModule() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside,
+      );
   }, []);
 
   // Clear region filter when vendor changes
@@ -51,13 +65,15 @@ export function ReportsModule() {
   // Get available regions based on selected vendor
   const availableRegions = useMemo(() => {
     if (!vendorFilter) {
-      // If no vendor selected, show all regions from orders
-      return Array.from(new Set(orders.map((o) => o.propertyRegion)));
+      // [Change 2] Use PROVINCES constant instead of deriving from orders
+      return PROVINCES;
     }
     // If vendor selected, show only provinces that vendor serves
-    const vendor = MOCK_VENDORS.find((v) => v.id === vendorFilter);
+    const vendor = MOCK_VENDORS.find(
+      (v) => v.id === vendorFilter,
+    );
     return vendor ? vendor.provinces : [];
-  }, [vendorFilter, orders]);
+  }, [vendorFilter]);
 
   // Filter Logic
   const filteredOrders = useMemo(() => {
@@ -83,7 +99,9 @@ export function ReportsModule() {
 
       // 3. Vendor Filter
       if (vendorFilter) {
-        const vendor = MOCK_VENDORS.find((v) => v.id === vendorFilter);
+        const vendor = MOCK_VENDORS.find(
+          (v) => v.id === vendorFilter,
+        );
         if (vendor && order.vendorName !== vendor.name)
           return false;
       }
@@ -97,7 +115,13 @@ export function ReportsModule() {
 
       return true;
     });
-  }, [orders, dateRange, statusFilter, vendorFilter, regionFilter]);
+  }, [
+    orders,
+    dateRange,
+    statusFilter,
+    vendorFilter,
+    regionFilter,
+  ]);
 
   const toggleStatus = (status: string) => {
     setStatusFilter((prev) =>
@@ -161,7 +185,6 @@ export function ReportsModule() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
           {/* Date Range - Now takes 5/12 of the space */}
           <div className="space-y-1 lg:col-span-5">
             <label className="text-sm font-medium text-gray-700">
@@ -170,7 +193,7 @@ export function ReportsModule() {
             <div className="flex items-center gap-2">
               <input
                 type="date"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-[#ec2224] focus:border-[#ec2224] min-w-[120px]" 
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-[#ec2224] focus:border-[#ec2224] min-w-[120px]"
                 value={dateRange.start}
                 onChange={(e) =>
                   setDateRange({
@@ -179,7 +202,9 @@ export function ReportsModule() {
                   })
                 }
               />
-              <span className="text-gray-400 font-medium">-</span>
+              <span className="text-gray-400 font-medium">
+                -
+              </span>
               <input
                 type="date"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-[#ec2224] focus:border-[#ec2224] min-w-[120px]"
@@ -214,18 +239,25 @@ export function ReportsModule() {
           </div>
 
           {/* Region Filter - Now takes 3/12 of the space */}
-          <div className="space-y-1 lg:col-span-3 relative" ref={dropdownRef}>
+          <div
+            className="space-y-1 lg:col-span-3 relative"
+            ref={dropdownRef}
+          >
             <label className="text-sm font-medium text-gray-700">
               Property Region
             </label>
             <button
               type="button"
-              onClick={() => setIsRegionDropdownOpen(!isRegionDropdownOpen)}
+              onClick={() =>
+                setIsRegionDropdownOpen(!isRegionDropdownOpen)
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-[#ec2224] focus:border-[#ec2224] flex items-center justify-between bg-white hover:bg-gray-50"
             >
               <span
                 className={
-                  regionFilter.length === 0 ? "text-gray-400" : "text-gray-900"
+                  regionFilter.length === 0
+                    ? "text-gray-400"
+                    : "text-gray-900"
                 }
               >
                 {regionFilter.length === 0
